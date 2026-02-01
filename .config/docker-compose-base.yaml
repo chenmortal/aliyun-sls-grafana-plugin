@@ -1,0 +1,31 @@
+services:
+  grafana:
+    user: root
+    container_name: 'aliyun-sls-datasource'
+
+    build:
+      context: .
+      args:
+        grafana_image: ${GRAFANA_IMAGE:-grafana-oss}
+        grafana_version: ${GRAFANA_VERSION:-12.3.1}
+        development: ${DEVELOPMENT:-false}
+        anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
+    ports:
+      - 3002:3000/tcp
+      - 2347:2345/tcp # delve
+    security_opt:
+      - 'apparmor:unconfined'
+      - 'seccomp:unconfined'
+    cap_add:
+      - SYS_PTRACE
+    volumes:
+      - ../dist:/var/lib/grafana/plugins/chenmortal-aliyunsls-datasource
+      - ../provisioning:/etc/grafana/provisioning
+      - ..:/root/chenmortal-aliyunsls-datasource
+
+    environment:
+      NODE_ENV: development
+      GF_LOG_FILTERS: plugin.chenmortal-aliyunsls-datasource:debug
+      GF_LOG_LEVEL: debug
+      GF_DATAPROXY_LOGGING: 1
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: chenmortal-aliyunsls-datasource
